@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prédiction Admission Universitaire</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+        }
+
+        .input-range::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+        }
+
+        .result-circle {
+            width: 180px;
+            height: 180px;
+            border: 8px solid;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.5s ease;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(79, 70, 229, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(79, 70, 229, 0);
+            }
+        }
+
+        .tab-active {
+            background: #4f46e5;
+            color: white;
+        }
+    </style>
+</head>
+<body class="py-10 px-4">
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <header class="text-center mb-12">
+        <h1 class="text-4xl md:text-5xl font-bold text-indigo-900 mb-3">Prédiction d'Admission Universitaire</h1>
+        <p class="text-lg text-gray-600 max-w-2xl mx-auto">Notre algorithme intelligent analyse votre profil pour
+            prédire vos chances d'admission</p>
+    </header>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Input Form -->
+        <div class="glass-card p-8">
+            <div class="flex border-b mb-6">
+                <button id="manual-tab" class="py-2 px-4 rounded-t-lg font-medium tab-active">Formulaire</button>
+                <button id="json-tab" class="py-2 px-4 rounded-t-lg font-medium text-gray-500">JSON</button>
+            </div>
+
+            <!-- Manual Input Form -->
+            <div id="manual-form">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Moyenne au Bac</label>
+                        <input type="number" id="moyenne_bac" step="0.1" min="0" max="20" value="13.5"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Score Entretien (0-100)</label>
+                        <input type="range" id="score_entretien" min="0" max="100" value="76"
+                               class="w-full input-range">
+                        <span id="score_entretien_value" class="text-indigo-600 font-medium">76</span>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Heures de Travail Hebdo</label>
+                        <input type="number" id="heures_travail" min="0" max="60" value="20"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Activités Extra-scolaires</label>
+                        <select id="activites_extra"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="Oui">Oui</option>
+                            <option value="Non">Non</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Sexe</label>
+                        <select id="sexe"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="F">Féminin</option>
+                            <option value="M">Masculin</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Revenu Familial (€)</label>
+                        <input type="number" id="revenu_familial" min="0" value="4200"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Distance École (km)</label>
+                        <input type="number" id="distance_ecole" step="0.1" min="0" value="5.5"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Type École Précédente</label>
+                        <select id="type_ecole"
+                                class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="Privé">Privé</option>
+                            <option value="Public">Public</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Classement Étudiant</label>
+                        <input type="number" id="classement" min="1" value="20"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Nombre d'Absences</label>
+                        <input type="number" id="absences" min="0" value="4"
+                               class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                </div>
+
+                <button id="predict-btn"
+                        class="mt-8 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-chart-line mr-2"></i> Prédire l'Admission
+                </button>
+            </div>
+
+            <!-- JSON Input Form -->
+            <div id="json-form" class="hidden">
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Entrez vos données au format
+                        JSON</label>
+                    <textarea id="json-input" rows="12"
+                              class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 font-mono text-sm">
+{
+    "Moyenne_bac": 13.5,
+    "Score_entretien": 76,
+    "Heures_travail_hebdo": 20,
+    "Activites_extra": "Oui",
+    "Sexe": "F",
+    "Revenu_familial": 4200,
+    "Distance_ecole": 5.5,
+    "Type_ecole_prec": "Privé",
+    "Classement_etudiant": 20,
+    "Nombre_absences": 4
+}</textarea>
+                </div>
+                <button id="predict-json-btn"
+                        class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded-lg transition duration-300 flex items-center justify-center">
+                    <i class="fas fa-code mr-2"></i> Prédire à partir du JSON
+                </button>
+            </div>
+        </div>
+
+        <!-- Results Section -->
+        <div class="glass-card p-8 flex flex-col items-center justify-center">
+            <div class="text-center mb-8">
+                <h2 class="text-2xl font-bold text-indigo-900 mb-2">Résultat de Prédiction</h2>
+                <p class="text-gray-600">Vos chances d'être admis à l'université</p>
+            </div>
+
+            <div id="result-container" class="text-center">
+                <div class="flex justify-center">
+                    <div class="result-circle border-indigo-200 mb-6">
+                        <div class="text-center">
+                            <span id="probability" class="text-5xl font-bold text-indigo-600">--</span>
+                            <span class="text-2xl font-bold text-indigo-600">%</span>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div id="result-message" class="text-xl font-medium mb-6">
+                    Entrez vos informations pour obtenir une prédiction
+                </div>
+
+                <div id="factors" class="w-full max-w-md hidden">
+                    <h3 class="font-bold text-gray-700 mb-3">Facteurs Clés</h3>
+                    <div class="space-y-2">
+                        <div class="flex justify-between">
+                            <span>Moyenne Bac</span>
+                            <span class="font-medium" id="factor-moyenne">13.5</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Score Entretien</span>
+                            <span class="font-medium" id="factor-entretien">76</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Activités Extra</span>
+                            <span class="font-medium" id="factor-activites">Oui</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span>Classement</span>
+                            <span class="font-medium" id="factor-classement">20</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="recommendations" class="mt-8 hidden">
+                    <h3 class="font-bold text-gray-700 mb-3">Recommandations</h3>
+                    <div id="recommendation-list" class="space-y-2 text-left">
+                        <!-- Will be filled by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- How It Works Section -->
+    <div class="glass-card p-8 mt-12">
+        <h2 class="text-2xl font-bold text-indigo-900 mb-6 text-center">Comment fonctionne notre prédiction ?</h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center p-4">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-database text-indigo-600 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Analyse des Données</h3>
+                <p class="text-gray-600">Notre modèle utilise des milliers de données historiques d'admissions pour
+                    établir des tendances.</p>
+            </div>
+            <div class="text-center p-4">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-brain text-indigo-600 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Algorithme Intelligent</h3>
+                <p class="text-gray-600">Un modèle de machine learning évalue l'importance relative de chaque facteur
+                    dans votre admission.</p>
+            </div>
+            <div class="text-center p-4">
+                <div class="bg-indigo-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <i class="fas fa-chart-pie text-indigo-600 text-2xl"></i>
+                </div>
+                <h3 class="font-bold text-lg mb-2">Précision Élevée</h3>
+                <p class="text-gray-600">Notre système a une précision prouvée de 87% dans la prédiction des admissions
+                    universitaires.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        // Gestion des onglets
+        const manualTab = document.getElementById('manual-tab');
+        const jsonTab = document.getElementById('json-tab');
+        const manualForm = document.getElementById('manual-form');
+        const jsonForm = document.getElementById('json-form');
+
+        manualTab.addEventListener('click', function () {
+            manualForm.classList.remove('hidden');
+            jsonForm.classList.add('hidden');
+            manualTab.classList.add('tab-active');
+            manualTab.classList.remove('text-gray-500');
+            jsonTab.classList.remove('tab-active');
+            jsonTab.classList.add('text-gray-500');
+        });
+
+        jsonTab.addEventListener('click', function () {
+            manualForm.classList.add('hidden');
+            jsonForm.classList.remove('hidden');
+            jsonTab.classList.add('tab-active');
+            jsonTab.classList.remove('text-gray-500');
+            manualTab.classList.remove('tab-active');
+            manualTab.classList.add('text-gray-500');
+        });
+
+        // Affichage de la valeur du score d’entretien
+        const scoreEntretien = document.getElementById('score_entretien');
+        const scoreEntretienValue = document.getElementById('score_entretien_value');
+        scoreEntretien.addEventListener('input', function () {
+            scoreEntretienValue.textContent = this.value;
+        });
+
+        // Fonction d'affichage des résultats
+        function displayResults(probability, data) {
+            const resultCircle = document.querySelector('.result-circle');
+            const probabilityElement = document.getElementById('probability');
+            const resultMessage = document.getElementById('result-message');
+            const factorsSection = document.getElementById('factors');
+            const recommendations = document.getElementById('recommendations');
+            const recommendationList = document.getElementById('recommendation-list');
+
+            probabilityElement.textContent = probability;
+
+            resultCircle.classList.remove('border-indigo-200', 'border-red-200', 'border-yellow-200', 'border-indigo-600', 'border-yellow-400', 'border-red-400', 'pulse');
+
+            if (probability >= 70) {
+                resultCircle.classList.add('border-indigo-600', 'pulse');
+                resultMessage.textContent = "Forte chance d'admission !";
+                resultMessage.className = "text-xl font-medium mb-6 text-indigo-600";
+            } else if (probability >= 40) {
+                resultCircle.classList.add('border-yellow-400');
+                resultMessage.textContent = "Chances modérées d'admission";
+                resultMessage.className = "text-xl font-medium mb-6 text-yellow-600";
+            } else {
+                resultCircle.classList.add('border-red-400');
+                resultMessage.textContent = "Chances faibles d'admission";
+                resultMessage.className = "text-xl font-medium mb-6 text-red-600";
+            }
+
+            // Afficher les facteurs
+            factorsSection.classList.remove('hidden');
+            document.getElementById('factor-moyenne').textContent = data.Moyenne_bac;
+            document.getElementById('factor-entretien').textContent = data.Score_entretien;
+            document.getElementById('factor-activites').textContent = data.Activites_extra;
+            document.getElementById('factor-classement').textContent = data.Classement_etudiant;
+
+            // Afficher les recommandations
+            recommendations.classList.remove('hidden');
+            recommendationList.innerHTML = '';
+
+            if (probability < 70) {
+                if (data.Moyenne_bac < 14) {
+                    recommendationList.innerHTML += '<div class="flex items-start"><i class="fas fa-book mt-1 mr-2 text-indigo-500"></i><span>Améliorez votre moyenne avec des cours supplémentaires</span></div>';
+                }
+                if (data.Score_entretien < 80) {
+                    recommendationList.innerHTML += '<div class="flex items-start"><i class="fas fa-comments mt-1 mr-2 text-indigo-500"></i><span>Pratiquez vos compétences en entretien</span></div>';
+                }
+                if (data.Activites_extra === "Non") {
+                    recommendationList.innerHTML += '<div class="flex items-start"><i class="fas fa-running mt-1 mr-2 text-indigo-500"></i><span>Participez à des activités extra-scolaires</span></div>';
+                }
+                if (data.Classement_etudiant > 15) {
+                    recommendationList.innerHTML += '<div class="flex items-start"><i class="fas fa-trophy mt-1 mr-2 text-indigo-500"></i><span>Améliorez votre classement scolaire</span></div>';
+                }
+            } else {
+                recommendationList.innerHTML += '<div class="flex items-start"><i class="fas fa-check-circle mt-1 mr-2 text-indigo-500"></i><span>Votre profil est très compétitif</span></div>';
+                recommendationList.innerHTML += '<div class="flex items-start"><i class="fas fa-university mt-1 mr-2 text-indigo-500"></i><span>Postulez à plusieurs universités pour maximiser vos chances</span></div>';
+            }
+        }
+
+        // Fonction d'appel à l'API
+        async function fetchPrediction(data) {
+            try {
+                const response = await fetch('/api/predict/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCSRFToken()
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erreur de l'API");
+                }
+
+                const result = await response.json();
+                if (result && typeof result.probabilite_admission === 'number') {
+                    displayResults(result.probabilite_admission, data);
+                } else {
+                    alert("Réponse invalide de l'API.");
+                }
+            } catch (error) {
+                console.error(error);
+                alert("Une erreur est survenue lors de la prédiction.");
+            }
+        }
+
+
+        // CSRF Token helper (si tu es en Django avec CSRF)
+        function getCSRFToken() {
+            const name = 'csrftoken';
+            const cookies = document.cookie.split(';');
+            for (let cookie of cookies) {
+                cookie = cookie.trim();
+                if (cookie.startsWith(name + '=')) {
+                    return decodeURIComponent(cookie.substring(name.length + 1));
+                }
+            }
+            return '';
+        }
+
+        // Récupération des données depuis le formulaire
+        function collectFormData() {
+            return {
+                Moyenne_bac: parseFloat(document.getElementById('moyenne_bac').value),
+                Score_entretien: parseInt(document.getElementById('score_entretien').value),
+                Heures_travail_hebdo: parseInt(document.getElementById('heures_travail').value),
+                Activites_extra: document.getElementById('activites_extra').value,
+                Sexe: document.getElementById('sexe').value,
+                Revenu_familial: parseInt(document.getElementById('revenu_familial').value),
+                Distance_ecole: parseFloat(document.getElementById('distance_ecole').value),
+                Type_ecole_prec: document.getElementById('type_ecole').value,
+                Classement_etudiant: parseInt(document.getElementById('classement').value),
+                Nombre_absences: parseInt(document.getElementById('absences').value)
+            };
+        }
+
+        // Prédiction via formulaire manuel
+        document.getElementById('predict-btn').addEventListener('click', function () {
+            const data = collectFormData();
+            fetchPrediction(data);
+        });
+
+        // Prédiction via JSON
+        document.getElementById('predict-json-btn').addEventListener('click', function () {
+            try {
+                const jsonInput = document.getElementById('json-input').value;
+                const data = JSON.parse(jsonInput);
+
+                // Mise à jour du formulaire
+                if (data.Moyenne_bac !== undefined) document.getElementById('moyenne_bac').value = data.Moyenne_bac;
+                if (data.Score_entretien !== undefined) {
+                    document.getElementById('score_entretien').value = data.Score_entretien;
+                    document.getElementById('score_entretien_value').textContent = data.Score_entretien;
+                }
+                if (data.Heures_travail_hebdo !== undefined) document.getElementById('heures_travail').value = data.Heures_travail_hebdo;
+                if (data.Activites_extra !== undefined) document.getElementById('activites_extra').value = data.Activites_extra;
+                if (data.Sexe !== undefined) document.getElementById('sexe').value = data.Sexe;
+                if (data.Revenu_familial !== undefined) document.getElementById('revenu_familial').value = data.Revenu_familial;
+                if (data.Distance_ecole !== undefined) document.getElementById('distance_ecole').value = data.Distance_ecole;
+                if (data.Type_ecole_prec !== undefined) document.getElementById('type_ecole').value = data.Type_ecole_prec;
+                if (data.Classement_etudiant !== undefined) document.getElementById('classement').value = data.Classement_etudiant;
+                if (data.Nombre_absences !== undefined) document.getElementById('absences').value = data.Nombre_absences;
+
+                fetchPrediction(data);
+
+                // Revenir à l'onglet manuel
+                manualForm.classList.remove('hidden');
+                jsonForm.classList.add('hidden');
+                manualTab.classList.add('tab-active');
+                manualTab.classList.remove('text-gray-500');
+                jsonTab.classList.remove('tab-active');
+                jsonTab.classList.add('text-gray-500');
+            } catch (e) {
+                alert("Erreur dans le format JSON. Veuillez vérifier votre saisie.");
+                console.error(e);
+            }
+        });
+
+        // Prédiction automatique au chargement
+        setTimeout(() => {
+            document.getElementById('predict-btn').click();
+        }, 500);
+    });
+</script>
+
+</body>
+</html>
